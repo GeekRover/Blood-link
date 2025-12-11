@@ -138,8 +138,8 @@ Ensure you have the following installed:
 ### **Step 1: Clone the Repository**
 
 ```bash
-git clone https://github.com/geekrover/Bloodlink_.git
-cd Bloodlink_
+git clone https://github.com/geekrover/Blood-link.git
+cd Blood-link
 ```
 
 ### **Step 2: Environment Configuration**
@@ -456,9 +456,9 @@ Special thanks to:
 ### Get in Touch
 
 - 📧 Email: maherulhassan1@gmail.com
-- 🐛 Report Issues: [GitHub Issues](https://github.com/geekrover/Bloodlink_/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/geekrover/Bloodlink_/discussions)
-- 🔗 Project Link: [https://github.com/yourusername/bloodlink](https://github.com/geekrover/Bloodlink_)
+- 🐛 Report Issues: [GitHub Issues](https://github.com/geekrover/Blood-link/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/geekrover/Blood-link/discussions)
+- 🔗 Project Link: [https://github.com/yourusername/bloodlink](https://github.com/geekrover/Blood-link)
 
 ---
 
