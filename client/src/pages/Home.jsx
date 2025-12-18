@@ -159,8 +159,8 @@ const Home = () => {
                       whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <span>View Requests</span>
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <span className='dark:text-white'>View Requests</span>
+                      <ArrowRight className="w-5 h-5 ml-2 dark:text-white" />
                     </motion.button>
                   </Link>
                 </>
