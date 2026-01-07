@@ -577,6 +577,68 @@ const Dashboard = () => {
                     </span>
                   </Link>
                 </motion.div>
+
+                <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.98 }}>
+                  <Link to="/record-donation" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1.5rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.1)' : 'rgba(220, 38, 38, 0.05)',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.2)' : '1px solid rgba(220, 38, 38, 0.1)',
+                    borderRadius: '12px',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{
+                      padding: '0.75rem',
+                      background: 'rgba(220, 38, 38, 0.1)',
+                      borderRadius: '12px'
+                    }}>
+                      <Droplet style={{ width: '24px', height: '24px', color: '#dc2626' }} />
+                    </div>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: isDarkMode ? '#f1f5f9' : '#111827',
+                      textAlign: 'center'
+                    }}>
+                      Record Donation
+                    </span>
+                  </Link>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.98 }}>
+                  <Link to="/availability" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1.5rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.1)' : 'rgba(220, 38, 38, 0.05)',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.2)' : '1px solid rgba(220, 38, 38, 0.1)',
+                    borderRadius: '12px',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{
+                      padding: '0.75rem',
+                      background: 'rgba(220, 38, 38, 0.1)',
+                      borderRadius: '12px'
+                    }}>
+                      <Calendar style={{ width: '24px', height: '24px', color: '#dc2626' }} />
+                    </div>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: isDarkMode ? '#f1f5f9' : '#111827',
+                      textAlign: 'center'
+                    }}>
+                      Availability
+                    </span>
+                  </Link>
+                </motion.div>
               </>
             )}
             <motion.div whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.98 }}>

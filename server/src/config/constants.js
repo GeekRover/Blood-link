@@ -31,6 +31,8 @@ export const NOTIFICATION_TYPES = {
   CHAT_MESSAGE: 'chat_message',
   VERIFICATION_APPROVED: 'verification_approved',
   VERIFICATION_REJECTED: 'verification_rejected',
+  VERIFICATION_RESUBMISSION_REQUESTED: 'verification_resubmission_requested',
+  VERIFICATION_REVOKED: 'verification_revoked',
   REMINDER: 'reminder',
   SYSTEM: 'system'
 };

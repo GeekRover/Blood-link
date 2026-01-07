@@ -16,6 +16,10 @@ export default {
       statements: 60
     }
   },
+  transform: {},
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
   verbose: true,
   forceExit: true,
   clearMocks: true,

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useDarkMode } from '../context/DarkModeContext';
+import { useChat } from '../context/ChatContext';
 import NotificationBell from './NotificationBell';
 import {
   Heart, Home, Trophy, BookOpen, Calendar, LayoutDashboard,
@@ -14,11 +15,13 @@ import {
 const Navbar = () => {
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const { getTotalUnread } = useChat();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const unreadCount = getTotalUnread ? getTotalUnread() : 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +59,7 @@ const Navbar = () => {
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/requests', icon: FileText, label: 'Requests' },
     ...(user?.role === 'recipient' ? [{ to: '/search-donors', icon: Search, label: 'Find Donors' }] : []),
+    ...(user?.role === 'donor' ? [{ to: '/matched-requests', icon: Heart, label: 'My Matches' }] : []),
     { to: '/donations', icon: Heart, label: 'Donations' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     ...(isAdmin ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
@@ -119,9 +123,29 @@ const Navbar = () => {
                     key={link.to}
                     to={link.to}
                     className={`modern-nav-link ${isActive(link.to) ? 'active' : ''}`}
+                    style={{ position: 'relative' }}
                   >
                     <link.icon className="w-4 h-4" />
                     <span>{link.label}</span>
+                    {link.to === '/chat' && unreadCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '-4px',
+                        right: '-8px',
+                        background: '#dc2626',
+                        color: 'white',
+                        borderRadius: '999px',
+                        fontSize: '0.625rem',
+                        fontWeight: '700',
+                        padding: '0.125rem 0.375rem',
+                        minWidth: '18px',
+                        textAlign: 'center',
+                        lineHeight: '1.2',
+                        boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)'
+                      }}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </>
@@ -295,9 +319,29 @@ const Navbar = () => {
                       to={link.to}
                       className={`modern-mobile-link ${isActive(link.to) ? 'active' : ''}`}
                       onClick={() => setMobileMenuOpen(false)}
+                      style={{ position: 'relative' }}
                     >
                       <link.icon className="w-5 h-5" />
                       <span>{link.label}</span>
+                      {link.to === '/chat' && unreadCount > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '8px',
+                          left: '8px',
+                          background: '#dc2626',
+                          color: 'white',
+                          borderRadius: '999px',
+                          fontSize: '0.625rem',
+                          fontWeight: '700',
+                          padding: '0.125rem 0.375rem',
+                          minWidth: '18px',
+                          textAlign: 'center',
+                          lineHeight: '1.2',
+                          boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)'
+                        }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>

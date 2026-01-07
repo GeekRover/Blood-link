@@ -4,6 +4,8 @@ import {
   getAllUsers,
   verifyUser,
   rejectUser,
+  requestResubmission,
+  revokeVerification,
   deactivateUser,
   activateUser,
   getPendingVerifications,
@@ -27,6 +29,8 @@ router.get('/verifications/pending', getPendingVerifications);
 router.get('/analytics', getAnalytics);
 router.put('/users/:userId/verify', verifyUser);
 router.put('/users/:userId/reject', rejectUser);
+router.put('/users/:userId/request-resubmission', requestResubmission);
+router.put('/users/:userId/revoke-verification', revokeVerification);
 router.put('/users/:userId/deactivate', deactivateUser);
 router.put('/users/:userId/activate', activateUser);
 router.delete('/users/:userId', deleteUser);

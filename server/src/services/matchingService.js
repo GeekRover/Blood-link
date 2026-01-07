@@ -60,13 +60,18 @@ export const findCompatibleDonors = async ({
      .lean();
 
 
-   // Filter by eligibility - check against verified donation history
+   // Filter by eligibility - check against verified donation history and availability schedule
    const eligibilityChecks = await Promise.all(
      donors.map(async (donor) => {
        const eligibility = await checkDonorEligibility(donor._id);
+
+       // Get full donor document to check time-based availability schedule
+       const donorDoc = await DonorProfile.findById(donor._id);
+       const isAvailable = donorDoc ? donorDoc.isAvailableAt(new Date()) : donor.isAvailable;
+
        return {
          donor,
-         eligible: eligibility.eligible
+         eligible: eligibility.eligible && isAvailable
        };
      })
    );

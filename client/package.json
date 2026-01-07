@@ -17,13 +17,18 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
+    "react-leaflet": "^4.2.1",
+    "react-leaflet-cluster": "^2.1.0",
     "react-router-dom": "^6.20.1",
-    "socket.io-client": "^4.6.0",
+    "recharts": "^3.6.0",
+    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
@@ -32,6 +37,6 @@
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
     "tailwindcss": "^4.1.17",
-    "vite": "^5.0.8"
+    "vite": "^7.3.0"
   }
 }

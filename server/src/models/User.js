@@ -93,6 +93,22 @@ const userSchema = new mongoose.Schema({
   },
   lastLogin: {
     type: Date
+  },
+  // Medical Data Consent (Legal Compliance)
+  medicalDataConsent: {
+    type: Boolean,
+    required: [true, 'Medical data consent is required'],
+    default: false
+  },
+  consentDate: {
+    type: Date
+  },
+  consentVersion: {
+    type: String,
+    default: '1.0' // Track which version of terms they accepted
+  },
+  consentIpAddress: {
+    type: String
   }
 }, {
   timestamps: true,

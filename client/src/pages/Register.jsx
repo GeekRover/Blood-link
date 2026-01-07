@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useDarkMode } from '../context/DarkModeContext';
-import { Heart, Mail, Lock, ArrowRight, User, Phone, Calendar, MapPin, Users } from 'lucide-react';
+import { Heart, Mail, Lock, ArrowRight, User, Phone, Calendar, MapPin, Users, FileText, Upload, CheckCircle } from 'lucide-react';
 import { DatePicker } from '../components/ui/date-picker';
+import LegalDisclaimer from '../components/LegalDisclaimer';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const Register = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [hospitalIDFile, setHospitalIDFile] = useState(null);
+  const [hospitalIDPreview, setHospitalIDPreview] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,9 +49,51 @@ const Register = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Only PDF, JPG, JPEG, and PNG files are allowed');
+        return;
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('File size cannot exceed 5MB');
+        return;
+      }
+
+      setHospitalIDFile(file);
+
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setHospitalIDPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setHospitalIDPreview(null);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate consent acceptance
+    if (!consentAccepted) {
+      toast.error('You must accept the Medical Data Consent to register', {
+        duration: 4000,
+      });
+      setError('You must accept the Medical Data Consent to register');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -67,7 +113,10 @@ const Register = () => {
         location: {
           type: 'Point',
           coordinates: [parseFloat(formData.longitude), parseFloat(formData.latitude)]
-        }
+        },
+        // Add consent data
+        medicalDataConsent: true,
+        consentVersion: '1.0'
       };
 
       if (formData.role === 'recipient') {
@@ -78,11 +127,65 @@ const Register = () => {
         };
       }
 
-      await register(userData);
-      toast.success('Registration successful! Welcome to BloodLink', {
-        icon: '❤️',
-        duration: 3000,
-      });
+      const response = await register(userData);
+
+      console.log('[Register] Registration response:', response);
+      console.log('[Register] Token location check - response.token:', response?.token);
+      console.log('[Register] Token location check - response.data.token:', response?.data?.token);
+
+      // Upload hospital ID if file is selected
+      const authToken = response?.data?.token || response?.token;
+
+      if (hospitalIDFile && authToken) {
+        try {
+          console.log('[Register] Uploading hospital ID file:', hospitalIDFile.name);
+          console.log('[Register] File type:', hospitalIDFile.type);
+          console.log('[Register] File size:', hospitalIDFile.size);
+
+          const formData = new FormData();
+          formData.append('hospitalID', hospitalIDFile);
+
+          const uploadURL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/upload-hospital-id`;
+          console.log('[Register] Upload URL:', uploadURL);
+          console.log('[Register] Token:', authToken ? 'Present' : 'Missing');
+
+          const uploadResponse = await fetch(uploadURL, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+          });
+
+          console.log('[Register] Upload response status:', uploadResponse.status);
+          console.log('[Register] Upload response ok:', uploadResponse.ok);
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json();
+            console.error('[Register] Upload error:', errorData);
+            throw new Error(errorData.message || 'Failed to upload hospital ID');
+          }
+
+          const uploadData = await uploadResponse.json();
+          console.log('[Register] Upload success:', uploadData);
+
+          toast.success('Registration successful! Hospital ID uploaded for verification.', {
+            icon: '❤️',
+            duration: 3000,
+          });
+        } catch (uploadErr) {
+          console.error('Hospital ID upload error:', uploadErr);
+          toast.warning('Registration successful, but hospital ID upload failed. You can upload it later from your profile.', {
+            duration: 5000,
+          });
+        }
+      } else {
+        toast.success('Registration successful! Welcome to BloodLink', {
+          icon: '❤️',
+          duration: 3000,
+        });
+      }
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -790,10 +893,172 @@ const Register = () => {
                 </div>
               )}
 
+              {/* Hospital ID Upload (Optional) */}
+              <div style={{
+                marginTop: '2rem',
+                padding: '1.5rem',
+                borderRadius: '16px',
+                background: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(254, 242, 242, 0.6)',
+                border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(220, 38, 38, 0.1)'
+              }}>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: isDarkMode ? '#f1f5f9' : '#111827',
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <FileText style={{ width: '20px', height: '20px', color: '#dc2626' }} />
+                  Hospital ID Document (Optional)
+                </h3>
+                <p style={{
+                  fontSize: '0.75rem',
+                  color: isDarkMode ? '#cbd5e1' : '#6b7280',
+                  marginBottom: '1rem'
+                }}>
+                  Upload your hospital ID to get verified faster. Accepted formats: PDF, JPG, PNG (Max 5MB)
+                </p>
+
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    id="hospitalID"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+
+                  {!hospitalIDFile ? (
+                    <label
+                      htmlFor="hospitalID"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '2rem',
+                        border: isDarkMode ? '2px dashed #334155' : '2px dashed #d1d5db',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        background: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(255, 255, 255, 0.4)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#dc2626';
+                        e.currentTarget.style.background = isDarkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 0.6)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = isDarkMode ? '#334155' : '#d1d5db';
+                        e.currentTarget.style.background = isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(255, 255, 255, 0.4)';
+                      }}
+                    >
+                      <Upload style={{ width: '40px', height: '40px', color: '#dc2626', marginBottom: '0.5rem' }} />
+                      <span style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        color: isDarkMode ? '#f1f5f9' : '#111827',
+                        marginBottom: '0.25rem'
+                      }}>
+                        Click to upload hospital ID
+                      </span>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: isDarkMode ? '#cbd5e1' : '#6b7280'
+                      }}>
+                        PDF, JPG, PNG up to 5MB
+                      </span>
+                    </label>
+                  ) : (
+                    <div style={{
+                      padding: '1rem',
+                      border: '2px solid #10b981',
+                      borderRadius: '12px',
+                      background: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: hospitalIDPreview ? '1rem' : '0'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <CheckCircle style={{ width: '24px', height: '24px', color: '#10b981' }} />
+                          <div>
+                            <div style={{
+                              fontSize: '0.875rem',
+                              fontWeight: '600',
+                              color: isDarkMode ? '#f1f5f9' : '#111827'
+                            }}>
+                              {hospitalIDFile.name}
+                            </div>
+                            <div style={{
+                              fontSize: '0.75rem',
+                              color: isDarkMode ? '#cbd5e1' : '#6b7280'
+                            }}>
+                              {(hospitalIDFile.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHospitalIDFile(null);
+                            setHospitalIDPreview(null);
+                          }}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            color: '#dc2626',
+                            background: isDarkMode ? 'rgba(220, 38, 38, 0.1)' : 'rgba(220, 38, 38, 0.05)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = isDarkMode ? 'rgba(220, 38, 38, 0.2)' : 'rgba(220, 38, 38, 0.1)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = isDarkMode ? 'rgba(220, 38, 38, 0.1)' : 'rgba(220, 38, 38, 0.05)'}
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      {hospitalIDPreview && (
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          marginTop: '1rem'
+                        }}>
+                          <img
+                            src={hospitalIDPreview}
+                            alt="Hospital ID Preview"
+                            style={{
+                              maxWidth: '100%',
+                              maxHeight: '200px',
+                              borderRadius: '8px',
+                              border: isDarkMode ? '1px solid #334155' : '1px solid #e5e7eb'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Medical Data Consent */}
+              <LegalDisclaimer
+                accepted={consentAccepted}
+                onAcceptChange={setConsentAccepted}
+                isDarkMode={isDarkMode}
+              />
+
               {/* Submit Button */}
               <motion.button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !consentAccepted}
                 className="glass-button"
                 whileHover={{ scale: loading ? 1 : 1.02 }}
                 whileTap={{ scale: loading ? 1 : 0.98 }}

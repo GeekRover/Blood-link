@@ -8,12 +8,50 @@ const DonorEligibility = ({ donorId }) => {
   const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [countdown, setCountdown] = useState(null);
 
   useEffect(() => {
     if (donorId) {
       fetchEligibility();
     }
   }, [donorId]);
+
+  // Countdown timer that updates every hour
+  useEffect(() => {
+    if (!eligibility?.nextEligibleDate || eligibility?.eligible) {
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const nextDate = new Date(eligibility.nextEligibleDate);
+      const diffMs = nextDate - now;
+
+      if (diffMs <= 0) {
+        // Time is up, re-fetch eligibility
+        fetchEligibility();
+        return;
+      }
+
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      setCountdown({
+        days: diffDays,
+        hours: diffHours,
+        minutes: diffMinutes,
+        seconds: diffSeconds,
+        totalMs: diffMs
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000); // Update every second for real-time countdown
+
+    return () => clearInterval(interval);
+  }, [eligibility?.nextEligibleDate, eligibility?.eligible]);
 
   const fetchEligibility = async () => {
     try {
@@ -178,12 +216,171 @@ const DonorEligibility = ({ donorId }) => {
               </p>
               <p style={{
                 color: isDarkMode ? '#fca5a5' : '#991b1b',
-                marginBottom: '0.5rem',
+                marginBottom: '1rem',
                 fontSize: '0.875rem'
               }}>
                 Days remaining: <strong>{eligibility.daysRemaining} days</strong>
               </p>
             </>
+          )}
+
+          {/* Countdown Timer */}
+          {countdown && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                background: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(243, 244, 246, 0.8)',
+                border: isDarkMode ? '2px solid rgba(220, 38, 38, 0.2)' : '2px solid rgba(220, 38, 38, 0.2)',
+                borderRadius: '12px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <p style={{
+                color: isDarkMode ? '#cbd5e1' : '#6b7280',
+                fontSize: '0.875rem',
+                margin: '0 0 1rem 0',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                ⏱️ Time Until Next Donation
+              </p>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
+                gap: '0.75rem'
+              }}>
+                {/* Days */}
+                <motion.div
+                  key={`days-${countdown.days}`}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '1rem 0.75rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.15)' : 'rgba(254, 226, 226, 0.9)',
+                    borderRadius: '10px',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.3)' : '1px solid rgba(220, 38, 38, 0.2)'
+                  }}
+                >
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#dc2626',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}>
+                    {String(countdown.days).padStart(2, '0')}
+                  </div>
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: isDarkMode ? '#fca5a5' : '#991b1b',
+                    marginTop: '0.375rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em'
+                  }}>
+                    DAYS
+                  </div>
+                </motion.div>
+
+                {/* Hours */}
+                <motion.div
+                  key={`hours-${countdown.hours}`}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '1rem 0.75rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.15)' : 'rgba(254, 226, 226, 0.9)',
+                    borderRadius: '10px',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.3)' : '1px solid rgba(220, 38, 38, 0.2)'
+                  }}
+                >
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#dc2626',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}>
+                    {String(countdown.hours).padStart(2, '0')}
+                  </div>
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: isDarkMode ? '#fca5a5' : '#991b1b',
+                    marginTop: '0.375rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em'
+                  }}>
+                    HRS
+                  </div>
+                </motion.div>
+
+                {/* Minutes */}
+                <motion.div
+                  key={`minutes-${countdown.minutes}`}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '1rem 0.75rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.15)' : 'rgba(254, 226, 226, 0.9)',
+                    borderRadius: '10px',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.3)' : '1px solid rgba(220, 38, 38, 0.2)'
+                  }}
+                >
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#dc2626',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}>
+                    {String(countdown.minutes).padStart(2, '0')}
+                  </div>
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: isDarkMode ? '#fca5a5' : '#991b1b',
+                    marginTop: '0.375rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em'
+                  }}>
+                    MINS
+                  </div>
+                </motion.div>
+
+                {/* Seconds */}
+                <motion.div
+                  key={`seconds-${countdown.seconds}`}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '1rem 0.75rem',
+                    background: isDarkMode ? 'rgba(220, 38, 38, 0.15)' : 'rgba(254, 226, 226, 0.9)',
+                    borderRadius: '10px',
+                    border: isDarkMode ? '1px solid rgba(220, 38, 38, 0.3)' : '1px solid rgba(220, 38, 38, 0.2)'
+                  }}
+                >
+                  <div style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#dc2626',
+                    fontVariantNumeric: 'tabular-nums'
+                  }}>
+                    {String(countdown.seconds).padStart(2, '0')}
+                  </div>
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: isDarkMode ? '#fca5a5' : '#991b1b',
+                    marginTop: '0.375rem',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em'
+                  }}>
+                    SECS
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
           )}
 
           {eligibility.nextEligibleDate && (
@@ -195,7 +392,8 @@ const DonorEligibility = ({ donorId }) => {
               You can donate again on: <strong>{new Date(eligibility.nextEligibleDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
+                weekday: 'short'
               })}</strong>
             </p>
           )}

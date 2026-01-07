@@ -3,10 +3,15 @@ import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import { initializeSocket } from './socket/socketHandler.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { apiLimiter } from './middlewares/rateLimiter.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
@@ -21,6 +26,13 @@ import eventRoutes from './routes/eventRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import auditRoutes from './routes/auditRoutes.js';
+import fallbackRoutes from './routes/fallbackRoutes.js';
+import badgeRoutes from './routes/badgeRoutes.js';
+import configRoutes from './routes/configRoutes.js';
+import availabilityRoutes from './routes/availabilityRoutes.js';
+import mapRoutes from './routes/mapRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -36,13 +48,19 @@ connectDB();
 export const io = initializeSocket(httpServer);
 
 // Middleware
-app.use(helmet()); // Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false, // Disable CSP to allow image loading
+})); // Security headers
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
@@ -69,6 +87,13 @@ app.use('/api/events', eventRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/fallback', fallbackRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/availability', availabilityRoutes);
+app.use('/api/map', mapRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -115,3 +140,4 @@ process.on('uncaughtException', (err) => {
 });
 
 export default app;
+
