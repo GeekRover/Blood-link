@@ -447,7 +447,7 @@ Special thanks to:
 - **MongoDB** - For robust database solutions
 - **Socket.io** - For real-time capabilities
 - **TailwindCSS** - For beautiful and efficient styling
-- **Open Source Community** - For invaluable tools and resources
+- **Open Source Community** - For invaluable tools and resources Hehe
 
 ---
 
